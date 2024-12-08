@@ -68,7 +68,6 @@ equations.each do |equation|
   perms.each do |perm|
     result = numbers.first
     nums = numbers
-    index_offset = 0
     perm.each_with_index do |op, i|
       # i = i - index_offset
       break if i > nums.length - 2
