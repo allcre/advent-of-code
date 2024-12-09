@@ -42,22 +42,27 @@ def rearrange2(file_mem, file_contents)
   file_contents = file_contents.chars.map(&:to_i)[0..-2]
   file_lengths = []
   empty_block_lengths = []
+  start_indices = [0]
   file_contents.each_with_index do |num, i|
     if (i % 2 == 1)
       empty_block_lengths << num
     else
       file_lengths << num
+      if (i != 0)
+        start_indices << start_indices[-1] + file_lengths[-2] + empty_block_lengths[-1]
+      end
     end
   end
 
   i = file_lengths[0] # first empty block
-  j = file_mem.length - file_lengths[-1] # start of last file
+  j = start_indices[-1] # start of last file
 
-  while (i <= j)
+  while (i <= j && file_lengths.length > 0 && empty_block_lengths.length > 0)
     if !(empty_block_lengths.max >= file_lengths[-1]) # file cant be moved
       file_lengths.pop
-      j -= file_lengths[-1]
-      j -= empty_block_lengths.pop
+      start_indices.pop
+      empty_block_lengths.pop
+      j = start_indices[-1]
       puts " "
       puts "couldnt move"
       puts "j is at #{j}, which is #{file_mem[j]}"
@@ -89,7 +94,8 @@ def rearrange2(file_mem, file_contents)
       # moving block
       m = j
       n = start_of_free_block_index
-      while (file_mem[m] != '.' && m < file_mem.length)
+      num = file_mem[m]
+      while (file_mem[m] == num && m < file_mem.length)
         file_mem[n] = file_mem[m]
         file_mem[m] = '.'
         m += 1
@@ -111,8 +117,9 @@ def rearrange2(file_mem, file_contents)
       end
       i = file_mem.index('.')
       file_lengths.pop
-      j -= file_lengths[-1]
-      j -= empty_block_lengths.pop
+      empty_block_lengths.pop
+      start_indices.pop
+      j = start_indices[-1]
 
       puts "i is at #{i}, which is #{file_mem[i]}"
       puts "j is at #{j}, which is #{file_mem[j]}"
@@ -194,3 +201,4 @@ file_mem = create_file(file_contents)
 puts file_mem.inspect
 ordered_file = rearrange2(file_mem, file_contents)
 puts ordered_file.inspect
+puts sum_mem(ordered_file)
